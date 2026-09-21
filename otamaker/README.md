@@ -58,15 +58,15 @@ artefact:
   description: A vital update recommended to all users
   device_type: rpi5
 
-payloads:
-- name: boot          # boot.sparse
-  type: image-sparse
-- name: system        # system.sparse
-  type: image-sparse
-- name: installdata.tgz
-  type: tmpfile
-- name: installer
-  type: script
+  payloads:
+  - name: boot          # boot.sparse
+    type: image-sparse
+  - name: system        # system.sparse
+    type: image-sparse
+  - name: installdata.tgz
+    type: tmpfile
+  - name: installer
+    type: script
 ```
 
 Any fields and payload types which aren't recognised are ignored. However, an error is returned if an update doesn't either write to at least one filesystem or include a script.
@@ -81,6 +81,7 @@ The artefact header is meant to provide a high-level view of the contents - what
 
 The following payload types are recognised:
 * `image-sparse` - a _sparse image_ of a complete partition, which contains all the data sectors in full but with holes and chunks of fixed values represented efficiently. The name of the payload must match the name of a partition - `boot` and `system` for the `trixie-minbase-ab` images from `rpi-image-gen`. These payloads are written directly to the indicated partition as they are downloaded - this saves time and means you don't need large amounts of temporary storage to host it.
+* `eeprom-ab` - a Pi 5 A/B EEPROM update (requires that an AB-compatible EEPROM image is already installed, that the image includes `rpi-connect-ota` 1.3.14 or later and the `rpieepromab` package, and that `config.txt` includes `dtoverlay=nospi10`).
 * `script` - a program to execute on the remote device. As the name suggests, this is expected to be a script of some description, but it doesn't have to be.
 * `tmpfile` - some other file to be copied to the device for the duration of the update. These are intended to be used by scripts, which they must appear before in the list of payloads in order to be accessible.
 

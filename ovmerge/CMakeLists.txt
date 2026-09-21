@@ -6,4 +6,4 @@ include(GNUInstallDirs)
 project(ovmerge)
 
 #add executables
-install(PROGRAMS ovmerge DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS ovmerge ovmerge_engine.py DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.1...3.27)
 
 project(utils)
 
+option(ENABLE_WERROR "Treat compiler warnings as errors" OFF)
+
 # List of subsidiary CMakeLists
+add_subdirectory(dtapply)
 add_subdirectory(dtmerge)
 add_subdirectory(eeptools)
 add_subdirectory(kdtc)
@@ -18,6 +21,7 @@ add_subdirectory(rpi-gpu-usage)
 add_subdirectory(vcgencmd)
 add_subdirectory(vclog)
 add_subdirectory(vcmailbox)
+add_subdirectory(splashasm)
 
 # Only build rpifwcrypto if GnuTLS is available
 include(CheckIncludeFile)

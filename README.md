@@ -1,6 +1,8 @@
 # utils
 A collection of scripts and simple applications
 
+* [dtapply](dtapply/) - A script that reads a Raspberry Pi `config.txt` and uses `dtmerge`
+    to apply all its `dtparam` and `dtoverlay` directives to a base `.dtb` file.
 * [dtmerge](dtmerge/) - A tool for applying compiled DT overlays (`*.dtbo`) to base Device
     Tree files (`*.dtb`). Also includes the `dtoverlay` and `dtparam` utilities.
 * [eeptools](eeptools/) - Tools for creating and managing EEPROMs for HAT+ and HAT board.
@@ -27,6 +29,7 @@ A collection of scripts and simple applications
     secure-boot provisioner.
 * [rpi-gpu-usage](rpi-gpu-usage/) - A tool for showing the per-process usage of the V3D GPU
     on Raspberry Pi 4 and 5.
+* [splashasm](splashasm/) - A tool for writing spi & i2c dumps for fast display at boot
 * [vcgencmd](vcgencmd/) - A tool to send commands to the VideoCore firmware and
     display the results.
 * [vclog](vclog/) - A tool to get VideoCore 'assert' or 'msg' logs
@@ -36,9 +39,9 @@ A collection of scripts and simple applications
 
 **Build Instructions**
 
-Install the prerequisites with "sudo apt install cmake device-tree-compiler libncurses-dev libfdt-dev libgnutls28-dev" - you need at least version 3.10 of cmake. Run the following commands to build and install everything, or see the README files in the subdirectories to just build utilities individually:
+Install the prerequisites with "sudo sh prerequisites.sh" - you need at least version 3.10 of cmake. Run the following commands to build and install everything, or see the README files in the subdirectories to just build utilities individually:
 
  - *cmake .*
-    N.B. Use *cmake -DBUILD_SHARED_LIBS=1 .* to build the libraries in the subprojects (libdtovl, gpiolib and piolib) as shared (as opposed to static) libraries.
+    N.B. Use *cmake -DBUILD_SHARED_LIBS=1 .* to build the libraries in the subprojects (libdtovl, gpiolib and piolib) as shared (as opposed to static) libraries. Add -DCMAKE_INSTALL_PREFIX=/usr to override the default install path of /usr/local.
  - *make*
  - *sudo make install*

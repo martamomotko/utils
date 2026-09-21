@@ -22,9 +22,20 @@ static void usage(const char *progname)
         "  get-key-status <key-id>          Gets the status of a specified key\n"
         "     STATUS is a bitmask of the following flags:\n"
         "     - DEVICE - Key is the device unique private key\n"
-        "     - LOCKED - The key cannot be read raw format. LOCKED persists until reboot.\n"
+        "     - READ_LOCKED - The key cannot be read in raw format\n"
+        "     - GEN_LOCKED - Key generation is locked\n"
+        "     - SIGN_LOCKED - Signing operations are locked\n"
+        "     - HMAC_LOCKED - HMAC operations are locked\n"
+        "     - USAGE_LOCKED - Key usage updates are locked\n"
         "\n"
-        "  set-key-status <key-id> [LOCKED] Sets the status attributes for the specified key.\n"
+        "  set-key-status <key-id> <status> Sets the status attributes for the specified key\n"
+        "     that persists until reboot.\n"
+        "     Supported status strings: READ_LOCKED, GEN_LOCKED,\n"
+        "     SIGN_LOCKED, HMAC_LOCKED, USAGE_LOCKED\n"
+        "\n"
+        "  get-key-usage <key-id>           Gets the usage of a specified key\n"
+        "\n"
+        "  set-key-usage <key-id> <usage>   Sets the usage of a specified key\n"
         "\n"
         "  sign --in <infile> --key-id <id> --alg <alg> [--out <outfile>] [--outform hex]\n"
         "\n"
@@ -293,8 +304,16 @@ static int parse_key_status_args(int argc, char *argv[], int start_idx, int *out
     int status = 0;
     int i;
     for (i = start_idx; i < argc; ++i) {
-        if (strcmp(argv[i], "LOCKED") == 0) {
-            status |= ARM_CRYPTO_KEY_STATUS_LOCKED;
+        if (strcmp(argv[i], "LOCKED") == 0 || strcmp(argv[i], "READ_LOCKED") == 0) {
+            status |= ARM_CRYPTO_KEY_STATUS_READ_LOCKED;
+        } else if (strcmp(argv[i], "GEN_LOCKED") == 0) {
+            status |= ARM_CRYPTO_KEY_STATUS_GEN_LOCKED;
+        } else if (strcmp(argv[i], "SIGN_LOCKED") == 0) {
+            status |= ARM_CRYPTO_KEY_STATUS_SIGN_LOCKED;
+        } else if (strcmp(argv[i], "HMAC_LOCKED") == 0) {
+            status |= ARM_CRYPTO_KEY_STATUS_HMAC_LOCKED;
+        } else if (strcmp(argv[i], "USAGE_LOCKED") == 0) {
+            status |= ARM_CRYPTO_KEY_STATUS_USAGE_LOCKED;
         } else {
             fprintf(stderr, "Unknown or unsupported key status string: %s\n", argv[i]);
             return -1;
@@ -474,6 +493,38 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    if (strcmp(argv[1], "get-key-usage") == 0) {
+        if (argc != 3)
+            usage(argv[0]);
+        key_id = atoi(argv[2]);
+        RPI_FW_CRYPTO_KEY_USAGE key_usage;
+        rc = rpi_fw_crypto_get_key_usage(key_id, &key_usage);
+        if (rc < 0)
+            goto error;
+        printf("Key %u usage: 0x%02x (%s)\n", key_id, (unsigned)key_usage, rpi_fw_crypto_key_usage_str(key_usage));
+        return 0;
+    }
+
+    if (strcmp(argv[1], "set-key-usage") == 0) {
+        if (argc != 4)
+            usage(argv[0]);
+        key_id = atoi(argv[2]);
+        unsigned long key_usage_raw = strtoul(argv[3], NULL, 0);
+        if (key_usage_raw > RPI_FW_CRYPTO_KEY_USAGE_INVALID) {
+            fprintf(stderr, "Invalid key usage 0x%lx: must be in range 0x0..0x%x\n",
+                    key_usage_raw, RPI_FW_CRYPTO_KEY_USAGE_INVALID);
+            return -1;
+        }
+        RPI_FW_CRYPTO_KEY_USAGE key_usage = (RPI_FW_CRYPTO_KEY_USAGE)key_usage_raw;
+        rc = rpi_fw_crypto_set_key_usage(key_id, key_usage);
+        if (rc < 0) {
+            fprintf(stderr, "Failed to set key usage: %s\n", rpi_fw_crypto_strerror(rc));
+            goto error;
+        }
+        printf("Set key %u usage to 0x%02x (%s)\n", key_id, (unsigned)key_usage, rpi_fw_crypto_key_usage_str(key_usage));
+        return 0;
+    }
+
     if (strcmp(argv[1], "sign") == 0) {
         rc = cmd_sign(argc, argv);
         if (rc < 0)
@@ -516,6 +567,9 @@ error:
     // Check the firmware crypto error status. If set, display the human readable string.
     last_err = rpi_fw_crypto_get_last_error();
     if (last_err != RPI_FW_CRYPTO_SUCCESS)
+    {
         fprintf(stderr, "Last crypto error: %d (%s)\n", last_err, rpi_fw_crypto_strerror(last_err));
+        rc = -last_err;
+    }
     return rc;
 }

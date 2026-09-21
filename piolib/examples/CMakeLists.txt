@@ -5,7 +5,11 @@ include(GNUInstallDirs)
 #set project name
 project(examples)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+option(ENABLE_WERROR "Treat compiler warnings as errors" OFF)
+if(ENABLE_WERROR)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+endif()
 
 if (CMAKE_COMPILER_IS_GNUCC)
    add_definitions (-ffunction-sections)
@@ -50,3 +54,38 @@ add_executable(quadenc quadrature_encoder.c)
 target_include_directories(quadenc PRIVATE ../include)
 target_link_libraries(quadenc pio)
 install(TARGETS quadenc RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(txcount txcount.c)
+target_include_directories(txcount PRIVATE ../include)
+target_link_libraries(txcount pio)
+install(TARGETS txcount RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(blockingtest blockingtest.c)
+target_include_directories(blockingtest PRIVATE ../include)
+target_link_libraries(blockingtest pio pthread)
+install(TARGETS blockingtest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(rxsource rxsource.c)
+target_include_directories(rxsource PRIVATE ../include)
+target_link_libraries(rxsource pio)
+install(TARGETS rxsource RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(irqtest irqtest.c)
+target_include_directories(irqtest PRIVATE ../include ../../pinctrl)
+target_link_libraries(irqtest pio gpiolib)
+install(TARGETS irqtest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(irqhog irqhog.c)
+target_include_directories(irqhog PRIVATE ../include)
+target_link_libraries(irqhog pio)
+install(TARGETS irqhog RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(irqtest2 irqtest2.c)
+target_include_directories(irqtest2 PRIVATE ../include ../../pinctrl)
+target_link_libraries(irqtest2 pio gpiolib)
+install(TARGETS irqtest2 RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(txsink txsink.c)
+target_include_directories(txsink PRIVATE ../include)
+target_link_libraries(txsink pio)
+install(TARGETS txsink RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
